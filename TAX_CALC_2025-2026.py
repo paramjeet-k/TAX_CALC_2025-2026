@@ -1,3 +1,6 @@
+import streamlit as st
+
+# Function to calculate income tax based on latest slabs
 def calculate_tax(income, deductions):
     # Subtract deductions from gross income
     taxable_income = max(income - deductions, 0)
@@ -26,35 +29,51 @@ def calculate_tax(income, deductions):
     
     return total_tax, taxable_income
 
-def input_deductions():
-    # Collect deduction details
-    section_80c = min(float(input("Enter amount for Section 80C (Max ₹1,50,000): ")), 150000)
-    section_80d = min(float(input("Enter amount for Section 80D (Health Insurance - Max ₹25,000): ")), 25000)
-    section_24b = min(float(input("Enter amount for Home Loan Interest (Max ₹2,00,000): ")), 200000)
-    section_80e = float(input("Enter amount for Education Loan Interest: "))
-    section_80tta = min(float(input("Enter amount for Savings Interest (Max ₹10,000): ")), 10000)
-    section_80g = float(input("Enter amount for Donations to Charity: "))
-    section_80ccd = min(float(input("Enter amount for NPS Contribution (Max ₹50,000): ")), 50000)
+# Streamlit UI
+def main():
+    st.title("🇮🇳 Income Tax Calculator - India (2024-25)")
+    st.write("🔎 Calculate your income tax based on the latest slabs and deductions.")
+
+    # Input Section
+    income = st.number_input("Enter your Annual Income (₹)", min_value=0, value=1000000)
+
+    # Deductions Section
+    st.subheader("💼 Deductions")
+
+    section_80c = st.number_input("Section 80C - Investments (Max ₹1,50,000):", min_value=0, max_value=150000, value=0)
+    section_80d = st.number_input("Section 80D - Health Insurance Premium (Max ₹25,000):", min_value=0, max_value=25000, value=0)
+    section_24b = st.number_input("Section 24(b) - Home Loan Interest (Max ₹2,00,000):", min_value=0, max_value=200000, value=0)
+    section_80e = st.number_input("Section 80E - Education Loan Interest:", min_value=0, value=0)
+    section_80tta = st.number_input("Section 80TTA - Savings Interest (Max ₹10,000):", min_value=0, max_value=10000, value=0)
+    section_80g = st.number_input("Section 80G - Donations to Charity:", min_value=0, value=0)
+    section_80ccd = st.number_input("Section 80CCD(1B) - NPS Contribution (Max ₹50,000):", min_value=0, max_value=50000, value=0)
+
+    # Apply standard deduction for salaried individuals
+    st.write("✅ Standard Deduction of ₹50,000 applied for salaried individuals.")
     standard_deduction = 50000
-    
-    total_deductions = (section_80c + section_80d + section_24b + section_80e + 
-                        section_80tta + section_80g + section_80ccd + standard_deduction)
-    
-    print(f"\n✅ Total deductions claimed: ₹{total_deductions:.2f}\n")
-    
-    return total_deductions
 
-# Input Income and Deductions
-income = float(input("Enter your annual income (in ₹): "))
-print("\n👉 Now entering deductions details...\n")
-deductions = input_deductions()
+    # Total Deductions Calculation
+    total_deductions = (
+        section_80c + section_80d + section_24b + section_80e +
+        section_80tta + section_80g + section_80ccd + standard_deduction
+    )
 
-# Calculate Tax
-tax, taxable_income = calculate_tax(income, deductions)
+    st.write(f"💡 **Total Deductions:** ₹{total_deductions:.2f}")
 
-# Output Results
-print("\n💼 SUMMARY")
-print(f"🔹 Gross Income: ₹{income:.2f}")
-print(f"🔹 Deductions: ₹{deductions:.2f}")
-print(f"🔹 Taxable Income: ₹{taxable_income:.2f}")
-print(f"🔹 Total Tax Payable (including 4% Cess): ₹{tax:.2f}")
+    # Calculate tax when button is clicked
+    if st.button("🧮 Calculate Tax"):
+        tax, taxable_income = calculate_tax(income, total_deductions)
+
+        st.subheader("📊 Result")
+        st.write(f"**Gross Income:** ₹{income:.2f}")
+        st.write(f"**Deductions:** ₹{total_deductions:.2f}")
+        st.write(f"**Taxable Income:** ₹{taxable_income:.2f}")
+        st.write(f"**Total Tax Payable (including 4% Cess):** ₹{tax:.2f}")
+
+        if tax == 0:
+            st.success("✅ No tax payable!")
+        else:
+            st.warning(f"⚠️ You have to pay ₹{tax:.2f} as tax.")
+
+if __name__ == "__main__":
+    main()
